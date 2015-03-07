@@ -1,0 +1,256 @@
+<html>
+<head>
+	<title>Note Taker</title>
+    <script src="http://fb.me/react-0.12.1.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.1.js"></script>
+
+    <style>
+    	.textbox {
+    		height: 100px;
+    		width: 173px;
+    	}
+    	.indivnote {
+    		display: inline-block;
+    		margin-left: 10px;
+    		margin-bottom: 10px;
+    	}
+    	.header {
+    		text-align: center;
+    		border-radius: 10px;
+    		border-color: red;
+    		border-style: dashed;
+    		margin-bottom: 10px;
+    		padding-bottom: 10px;
+    	}
+    	#sidebar {
+		    line-height:30px;
+		    background-color:#eeeeee;
+		    height:100%;
+		    width:250px;
+		    float:left;
+		    padding:5px;	      
+		}
+		#content {
+		    width:800px;
+		    float:left;
+		    padding:10px;	 	 
+		}
+
+		.search{
+		    text-align: center;
+		    font: inherit;
+		    border: 6px solid #a3d8d6;
+		    padding: 5px 12px;
+		    font-size: 15px;
+		    box-shadow: 0 1px 1px #DDD;
+		    width: 250px;
+		    outline: none;
+		    display: block;
+		    color: #7B8585;
+		}
+
+		.titles{
+		    text-align: center;
+		    font: inherit;
+		    border: 6px solid #a3d8d6;
+		    font-size: 15px;
+		    box-shadow: 0 1px 1px #DDD;
+		    width: 173px;
+		    outline: none;
+		    display: block;
+		    color: #7B8585;
+		    
+		}
+
+		ul{
+		    list-style: none;
+		    display: inline-block;
+		    width: 250px;
+		    text-align: left;
+		    padding-left: 0px;
+		}
+
+		ul li{
+		    display: block;
+		    padding: 5px 20px;
+		    background-color: #F8F8F8;
+		    color: #7B8585;
+		    margin-bottom: 3px;
+		    position: relative;
+		}
+
+		ul li:hover{
+		    background-color:#d8f2f1;
+		}
+
+
+    </style>
+
+
+</head>
+<body>
+
+	<div id="sidebar"></div>
+	<div id="content"></div>
+	<script type="text/jsx">
+
+
+	var data = [
+		{id: 1, title: "shopping", text: "note1"},
+		{id: 2, title: "to do", text: "note2"},
+		{id: 3, title: "jobs", text: "note3"},
+		{id: 4, title: "coding", text: "note4"},
+		{id: 5, title: "cars", text: "note5"}
+	];
+
+	var Main = React.createClass({
+	    getInitialState: function() {
+	        return {
+	            data: this.props.data.splice(0),
+				newText: ''
+	        }
+	    },
+		addnote: function() {
+			newobject = {
+				id: this.state.data.length + 1,
+				title: "title",
+				text: "text"
+			}
+
+			this.state.data.push(newobject);
+
+			this.setState({
+                data: this.state.data
+            }) 
+
+		},
+	    deletenote: function (note) {
+	        this.state.data.splice(this.state.data.indexOf(note), 1);
+
+	        this.setState({
+	        	data: this.state.data
+	        });
+	    },
+	    updateTitle: function (note) {
+			var data = this.state.data;
+			var index = data.indexOf(note);
+
+        	data[index].title = event.target.value;
+
+			this.setState({
+                data: this.state.data
+            })
+	    },
+	    updateText: function (note) {
+			var data = this.state.data;
+			var index = data.indexOf(note);
+
+        	data[index].text = event.target.value;
+
+			this.setState({
+                data: this.state.data
+            })
+	    },
+		render: function() {
+			var newText;
+			that = this;
+	        return (
+	        	<div>
+		        	<NotesList data={this.state.data}/>
+		            <div id="content">
+		            <Header addnote={that.addnote} />
+		                {this.state.data.map(function (note) {
+		                    return (
+		                        <TextBox updateTitle={that.updateTitle.bind(null, note)} updateText={that.updateText.bind(null, note)} deletenote={that.deletenote.bind(null, note)} title={note.title} text={note.text} />
+		                    )
+		                })
+		            }
+		            </div>
+	            </div>
+	        )
+		}
+	});
+
+	var Header = React.createClass({
+		render: function(){
+			return (
+				<div className="header">
+					<h1>NOTE TAKER</h1>
+	
+
+					<button onClick={this.props.addnote}>Add Note</button>
+				</div>
+			)
+		}
+
+	})
+
+	var TextBox = React.createClass({
+		render: function() {
+			return (
+				<div className="indivnote">
+					<input type="text" className="titles" value={this.props.newText} onChange={this.props.updateTitle} placeholder={this.props.title}></input>
+					<div/>
+					<input type="text" className="textbox" value={this.props.newText} onChange={this.props.updateText} placeholder={this.props.text}></input>
+					<div/>
+					<button onClick={this.props.deletenote}>Delete Note</button>
+				</div>
+			)
+		}
+	});
+
+	var NotesList = React.createClass({
+
+	    getInitialState: function(){
+	        return { searchString: '' };
+	    },
+
+	    handleChange: function(e){
+	        this.setState({searchString:e.target.value});
+	    },
+
+	    render: function() {
+
+	        var data = this.props.data;
+	        var searchString = this.state.searchString.trim().toLowerCase();
+
+
+	        if(searchString.length > 0){
+
+	            data = data.filter(function(note){
+	                return note.title.toLowerCase().match( searchString );
+	            });
+
+	        }
+
+	        return (
+		        <div id="sidebar">
+		            <input type="text" className="search" value={this.state.searchString} onChange={this.handleChange} placeholder="Search Notes" />
+		            <ul>
+		                {data.map(function (note) {
+		                    return (
+		                        <li>{note.title}</li>
+		                    	)
+		                	})
+	            		}
+	            	</ul>
+	            </div>
+	        )
+	    }
+	});
+                                                  
+  React.render(<Main data={data}/>,document.body);
+
+
+</script>
+
+ <% if (!isAuthenticated) { %>
+	<a href="/login">Log in here</a>
+<% } else{  %>
+ 	hello, <%= user.name %>!
+ 	 <a href="/logout">Log out</a>
+<% }%>
+
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<html>
+<head>
+	<title>Notes</title>
+</head>
+<body>
+<% if (!isAuthenticated) { %>
+	<a href="/login">Log in here</a>
+<% } else{  %>
+ 	hello, <%= user.name %>!
+ 	 <a href="/logout">Log out</a>
+	<form action="" method="post">
+		<br>
+		<textarea type="submit"  name="notes" placeholder="Write your notes here" ></textarea>
+		<input value="Save notes" type="submit"  > 
+	</form>
+<% }%>
+</body>
+</html>

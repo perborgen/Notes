@@ -1,0 +1,318 @@
+<html>
+<head>
+	<title>Note Taker</title>
+    <script src="http://fb.me/react-0.12.1.js"></script>
+    <script src="http://fb.me/JSXTransformer-0.12.1.js"></script>
+
+    <style>
+    	.textbox {
+    		height: 100px;
+    		width: 173px;
+    	}
+    	.indivnote {
+    		display: inline-block;
+    		margin-left: 10px;
+    		margin-bottom: 10px;
+    	}
+    	.header {
+    		text-align: center;
+    		border-radius: 50px;
+    		margin-bottom: 10px;
+    		padding-bottom: 10px;
+    		border: 10px ridge #a3d8d6;
+    	}
+    	#sidebar {
+		    line-height:30px;
+		    background-color:#eeeeee;
+		    height:100%;
+		    width:250px;
+		    float:left;
+		    padding:5px;	      
+		}
+		#content {
+		    width:700px;
+		    float:left;
+		    padding:10px;	 	 
+		}
+
+		.search{
+		    text-align: center;
+		    font: inherit;
+		    border: 6px solid #a3d8d6;
+		    padding: 5px 12px;
+		    font-size: 15px;
+		    box-shadow: 0 1px 1px #DDD;
+		    width: 250px;
+		    outline: none;
+		    display: block;
+		    color: #7B8585;
+		}
+
+		.titles{
+		    text-align: center;
+		    font: inherit;
+		    border: 6px solid #a3d8d6;
+		    font-size: 15px;
+		    box-shadow: 0 1px 1px #DDD;
+		    width: 173px;
+		    outline: none;
+		    display: block;
+		    color: #7B8585;
+		    
+		}
+
+		ul{
+		    list-style: none;
+		    display: inline-block;
+		    width: 250px;
+		    text-align: left;
+		    padding-left: 0px;
+		}
+
+		ul li{
+		    display: block;
+		    padding: 5px 20px;
+		    background-color: #F8F8F8;
+		    color: #7B8585;
+		    margin-bottom: 3px;
+		    position: relative;
+		}
+
+		ul li:hover{
+		    background-color:#d8f2f1;
+		}
+
+    </style>
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <script src="/socket.io.js"></script>
+
+</head>
+<body>
+
+<div id="container"></div>
+
+
+ <% if (!isAuthenticated) { %>
+	<a href="/login">Log in here</a>
+<% } else{  %>
+ 	hello, <%= user.name %>!
+ 	here is your notes: 
+ 	<%= member.notes %>
+ 	 <a href="/logout">Log out</a>
+	<form action="/" method="post">
+		<br>
+		<textarea type="submit"  name="notes" placeholder="Write your notes here" ></textarea>
+		<input value="Save notes" type="submit"  > 
+	</form>
+
+
+		<textarea  id="socket_text" type="submit"  name="notes" placeholder="Write your notes here" ></textarea>
+		<input value="Socket" id="socket_button" type="submit"  > 
+<% }%>
+
+
+<script type="text/jsx">
+
+var iosocket = io.connect();
+iosocket.on('connect', function(socket){
+	/*	socket.on('init', function(status, callback){
+			console.log('init recieved');*/
+		console.log('Client connected to socket io');
+
+});
+
+	var data3 = [{id: 1, title: "My client title", text: "My client socket notes"}, {id: 2, title: "My client title2", text: "My client socket notes 2"}];
+
+	  /* $('#socket_button').click( function(e){
+		   	e.preventDefault();
+		   	iosocket.emit('message', $("#socket_text").val());
+		   	console.log('socket button clicked');
+		});*/
+
+	var Main = React.createClass({
+	    getInitialState: function() {
+	    	iosocket.on('init', this.initialize);
+	        return {
+		data2: [{id: 1, title: "", text: ""}],
+				newText: ''
+	        }
+	    },
+	    initialize: function(data){
+	    	console.log('initialize triggered. data2: ', data);
+	    	this.setState({
+	    		data2: data
+	    })
+	    },
+
+		addnote: function() {
+			newobject = {
+				id: this.state.data.length + 1,
+				title: "title",
+				text: "text"
+			}
+
+			this.state.data.push(newobject);
+
+			this.setState({
+                data: this.state.data
+            }) 
+
+		},
+
+	    deletenote: function (note) {
+	        this.state.data.splice(this.state.data.indexOf(note), 1);
+
+	        this.setState({
+	        	data: this.state.data
+	        });
+	    },
+	    updateTitle: function (note) {
+			var data = this.state.data2;
+			var index = data.indexOf(note);
+
+        	data[index].title = event.target.value;
+
+			this.setState({
+                data: this.state.data
+            })
+            console.log(note);
+	    },
+
+	    updateText: function (note) {
+			var data = this.state.data2;
+			var index = data.indexOf(note);
+
+        	data[index].text = event.target.value;
+
+			this.setState({
+                data: this.state.data
+            })
+            console.log(note);
+
+	    },
+		render: function() {
+			var newText;
+			that = this;
+			data2 = this.state.data2;
+			console.log('Main,state data2: ',data2);
+	        return (
+	        	<div>
+		        	<NotesList data={this.state.data}/>
+		            <div id="content">
+		            <Header addnote={this.addnote} />
+		            <input type="text"/>
+		             <TextBoxWrapper data2={this.state.data2} data3={this.props.data3}  updateTitle={this.updateTitle} updateText={this.updateText} deletenote={this.deletenote} />
+		            </div>
+	            </div>
+	        )
+		}
+	});
+
+	var TextBoxWrapper = React.createClass({
+		render: function(){	
+
+				console.log('TextBoxWrapper, data2:', this.props.data2);
+				var that = this; 
+				var textboxes = [];
+				this.props.data2.map(function(note){
+					textboxes.push(<TextBox data2={that.props.data2}
+	                    	updateTitle={that.props.updateTitle.bind(null,note)} 
+	                    	updateText={that.props.updateText.bind(null,note)} 
+	                    	deletenote={that.props.deletenote.bind(null,note)} title={note.title} text={note.text}/>)
+				})
+
+				return(<div>
+							{textboxes}
+                    	</div>)
+
+        
+               
+        }
+	});
+
+
+var TextBox = React.createClass({
+		handleSave: function(e){
+			var message = this.props.text;
+			iosocket.emit('message', message);
+			console.log('handleSave triggered');
+
+		},
+		render: function() {
+			console.log('rendering last react elements');
+			return (
+				<div className="indivnote">
+					<form action="/" method="post" onSubmit={this.handleSave}>
+						<input type="text" className="titles" value={this.props.title} onChange={this.props.updateTitle}></input>
+						<div/>
+						<textarea className="textbox" value={this.props.text} onChange={this.props.updateText} name="notes" ></textarea>
+						<div/>
+						<input type="submit" value="Save" />
+						<button onClick={this.props.deletenote}>Delete Note</button>
+					</form>
+				</div>
+			)
+		}
+	});
+
+
+	var Header = React.createClass({
+		render: function(){
+			return (
+				<div className="header">
+					<h1>NOTE TAKER</h1>
+					<button onClick={this.props.addnote}>Add Note</button>
+				</div>
+			)
+		}
+
+	})
+
+	
+	var NotesList = React.createClass({
+
+	    getInitialState: function(){
+	        return { searchString: '' };
+	    },
+
+	    handleChange: function(e){
+	        this.setState({searchString:e.target.value});
+	    },
+
+	    render: function() {
+
+	        var data = this.props.data;
+	        var searchString = this.state.searchString.trim().toLowerCase();
+
+
+	        if(searchString.length > 0){
+
+	            data = data.filter(function(note){
+	                return note.title.toLowerCase().match( searchString );
+	            });
+
+	        }
+
+	        return (
+		        <div id="sidebar">
+		            <input type="text" className="search" value={this.state.searchString} onChange={this.handleChange} placeholder="Search Notes" />
+		            <ul>
+	
+	            	</ul>
+	            </div>
+	        )
+	    }
+	});
+                                                   
+	React.render(<Main data3={data3}/>, document.getElementById('container'));
+
+
+
+	</script>
+
+
+
+
+</body>
+</html>
